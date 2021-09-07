@@ -3,12 +3,11 @@ from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from ckeditor.fields import RichTextField
 # Create your models here.
-
-
 class users(AbstractUser):
-    password = models.CharField(max_length=1000,null=True)    
+    password = models.CharField(max_length=1000,null=True)
     def __str__(self):
         return f"{self.username}:{self.email}"
+    
 
 class Projects(models.Model):
     title = models.CharField(max_length=63)
@@ -33,11 +32,11 @@ class Cards(models.Model):
     descp = RichTextField()
     due_date = models.DateTimeField()
     created_by  = models.OneToOneField(users, on_delete=models.CASCADE, related_name="trelloAPIs.Cards.created_by+")
-    assigned_to = models.ManyToManyField(users) 
+    assigned_to = models.ManyToManyField(users) # cannot be assigned to someone not a memeber of the project
     cards_list = models.ForeignKey(Lists, on_delete=models.CASCADE)
 
     def __str__(self):
-        return f"{self.card}"
+        return f"{self.title}"
     
 class Comments(models.Model):
     comment_tym = models.DateTimeField()

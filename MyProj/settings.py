@@ -28,7 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
-    # 'trelloAPIs.authentications.checkUsers'
+    'trelloAPIs.authentications.checkUser'
 ]
 CKEDITOR_UPLOAD_PATH = "ckeditor_uploads/"
 
