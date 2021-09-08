@@ -90,21 +90,21 @@ class ProjectApiViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [ProjectPermission, ]
     
-    @action(detail=True, methods=['get'], url_path='proj', url_name='projects-proj')
-    def get_user_projects(self, request, pk=None):
-        try:
-            projects = Projects.objects.all()
-            user_ = users.objects.get(id=pk)
-            mydict = {"member_projects":{}, "creator_projects": {}}
-            for item in projects:
-                for member in item.members.iterator():
-                    if user_.id == member.id:
-                        mydict["member_projects"][item.id] =  item.title
-                if item.created_by == user_:
-                    mydict["creator_projects"][item.id]= item.title
-            return JsonResponse(mydict)        
-        except users.DoesNotExist:
-            return JsonResponse({"error_user_id": "not found"})
+    # @action(detail=True, methods=['get'], url_path='proj', url_name='projects-proj')
+    # def get_user_projects(self, request, pk=None):
+    #     try:
+    #         projects = Projects.objects.all()
+    #         user_ = users.objects.get(id=pk)
+    #         mydict = {"member_projects":{}, "creator_projects": {}}
+    #         for item in projects:
+    #             for member in item.members.iterator():
+    #                 if user_.id == member.id:
+    #                     mydict["member_projects"][item.id] =  item.title
+    #             if item.created_by == user_:
+    #                 mydict["creator_projects"][item.id]= item.title
+    #         return JsonResponse(mydict)        
+    #     except users.DoesNotExist:
+    #         return JsonResponse({"error_user_id": "not found"})
 
 
 
