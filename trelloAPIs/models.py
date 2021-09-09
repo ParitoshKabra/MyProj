@@ -2,6 +2,7 @@ from django.contrib.auth.base_user import AbstractBaseUser
 from django.contrib.auth.models import AbstractUser, BaseUserManager
 from django.db import models
 from ckeditor.fields import RichTextField
+from django.db.models.fields import related
 # Create your models here.
 class users(AbstractUser):
     password = models.CharField(max_length=1000,null=True)
@@ -12,7 +13,7 @@ class users(AbstractUser):
 class Projects(models.Model):
     title = models.CharField(max_length=63)
     descp = RichTextField()
-    created_by  = models.OneToOneField(users, on_delete=models.CASCADE, related_name="trelloAPIs.Projects.created_by+")
+    created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="created_projects")
     members = models.ManyToManyField(users, related_name="projects_of_user") #how to make creator a compulsory member
     #can make admin, how to ensure admin as a member/ creator seperate from member
     def __str__(self):
@@ -31,8 +32,8 @@ class Cards(models.Model):
     title = models.CharField(max_length=63)
     descp = RichTextField()
     due_date = models.DateTimeField()
-    created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="trelloAPIs.Cards.created_by+")
-    assigned_to = models.ManyToManyField(users) # cannot be assigned to someone not a memeber of the project
+    created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="created_cards")
+    assigned_to = models.ManyToManyField(users, related_name="assigned_cards") # cannot be assigned to someone not a memeber of the project
     cards_list = models.ForeignKey(Lists, on_delete=models.CASCADE, related_name="list_cards")
 
     def __str__(self):

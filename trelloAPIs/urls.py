@@ -8,6 +8,7 @@ urlpatterns = [
     path('oauth_redirect', views.oauth_redirect, name='oauth_redirect'),
     path('login', views.trello_login, name='login_auth'),
     path('home/<str:msg>', views.home, name='home'),
+    path('logout/', views.log_out, name='logout'),
     # path('user/<int:pk>/projects', views.get_user_projects, name='user_projects'),
     path('', include(router.urls)),
 ]
