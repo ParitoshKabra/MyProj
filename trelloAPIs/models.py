@@ -14,7 +14,8 @@ class Projects(models.Model):
     title = models.CharField(max_length=63)
     descp = RichTextField()
     created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="created_projects")
-    members = models.ManyToManyField(users, related_name="projects_of_user") #how to make creator a compulsory member
+    members = models.ManyToManyField(users, related_name="projects_of_user")
+    admins = models.ManyToManyField(users, related_name="projects_of_user_as_admin") #how to make creator a compulsory member
     #can make admin, how to ensure admin as a member/ creator seperate from member
     def __str__(self):
         return f"{self.title}"
@@ -40,7 +41,7 @@ class Cards(models.Model):
         return f"{self.title}"
     
 class Comments(models.Model):
-    comment_tym = models.DateTimeField()
+    comment_tym = models.DateTimeField(auto_now=True)
     commented_by = models.ForeignKey(users, on_delete=models.CASCADE, related_name="comments_of_user") # prevent comments from getting deleted
     card_comments = models.ForeignKey(Cards, on_delete=models.CASCADE, related_name="comments_in_card")
     comment = RichTextField(default=None)

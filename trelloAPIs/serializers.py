@@ -1,16 +1,19 @@
 from .models import *
 from rest_framework import serializers
-
-class CommentSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    class Meta:
-        model = Comments
-        fields = '__all__'
+from django.utils.timezone import now
 
 class UserCreatedByForeignkey(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         return users.objects.filter(id=self.context['request'].user.id)
 
+
+class CommentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    commented_by = UserCreatedByForeignkey()
+    card_comments = serializers.PrimaryKeyRelatedField(queryset=Cards.objects.all())
+    class Meta:
+        model = Comments
+        fields = '__all__'
 
 class CardSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -23,7 +26,7 @@ class CardSerializer(serializers.ModelSerializer):
 class ListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     list_cards = CardSerializer(many=True, read_only=True)
-    lists_project = serializers.PrimaryKeyRelatedField(read_only=True)
+    lists_project = serializers.PrimaryKeyRelatedField(queryset=Projects.objects.all())
     class Meta:
         model = Lists
         fields = '__all__'

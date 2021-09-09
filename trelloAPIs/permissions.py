@@ -3,17 +3,21 @@ from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from .models import Lists, Projects
 
+#check on backend created_by for projects and cards
 
 class ProjectPermission(BasePermission):
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             return request.user.is_active
         return request.user.is_authenticated
+    #error here
     def has_object_permission(self, request, view, obj):
         if request.method != "GET":
-            if request.user in obj.members.all():
+            if request.user in obj.admins.all() or request.user == obj.created_by:
                 return True
             return request.user.is_staff
+        else:
+            return request.user.is_authenticated
 class UserPermissions(BasePermission):
     def has_permission(self, request, view):
         if request.method == "GET":
@@ -28,42 +32,30 @@ class UserPermissions(BasePermission):
 
 class ListPermissions(BasePermission):
     def has_permission(self, request, view):
-        return request.user.is_active
+        return request.user.is_active 
+    #error
     def has_object_permission(self, request, view, obj):
-        if request.user in obj.lists_project.members.all():
+        if request.user in obj.lists_project.members.all() or request.user == obj.lists_project.created_by or request.user.is_staff or request.user.is_superuser:
             return True
-        return request.user.is_staff
-
-    def has_object_permission(self, request, view, obj):
-        if request.method == "GET":
-            if request.user in obj.cards_list.list_projects.members.all():
-                return True
-        else:
-            if request.user is obj.created_by:
-                return True
-        return self.check_staff_access(request)
+        return False
 
 class CanCommentorViewComments(BasePermission):
     def check_staff_access(self, request):
         return request.user.is_staff or request.user.is_superuser
-    
     def has_permission(self, request, view):
-        return self.check_staff_access(request)
-    
+        return request.user.is_authenticated and request.user.is_active
+
     def has_object_permission(self, request, view, obj):
-        if request.method == "POST":
-            if request.user is obj.card_comments.cards_list.projects_list.members.all():
-                return True
-            return self.check_staff_access(request)
-        elif request.method != "GET":
-            if request.user is obj.commented_by:
+        if request.method in SAFE_METHODS:
+            if request.user is obj.card_comments.cards_list.lists_project.members.all() or request.user == obj.commented_by:
                 return True
             return self.check_staff_access(request)
         else:
-            if request.user is obj.comment_by or request.user is obj.card_comments.cards_list.projects_list.members.all():
+            if request.user == obj.commented_by:
+                print(request.method)
+                # print("thsi was checked") #why!
                 return True
             return self.check_staff_access(request)
-
 class CardAssignPermissionorAccess(BasePermission):
     message = "Cannot assign card to a user who is not the member of the project"
     
@@ -72,7 +64,6 @@ class CardAssignPermissionorAccess(BasePermission):
 
     def has_permission(self, request, view):
         try:
-            super().has_permission(request, view)
             if self.check_staff_access(request) == False:
                 list_ = Lists.objects.get(id = request.data.get('cards_list'))
                 project = list_.lists_project
@@ -87,10 +78,8 @@ class CardAssignPermissionorAccess(BasePermission):
                 assigned_users.sort()
                
                 if len(lt) < len(assigned_users):
-                    print("came in length if")
                     return False
                 else:
-                    print("came here in else")
                     for id in assigned_users:
                         print(id)
                         if not int(id) in lt:
@@ -98,8 +87,8 @@ class CardAssignPermissionorAccess(BasePermission):
             return True
         except Lists.DoesNotExist:
             return True
-# get_permission ,assigned_cards, IsAdminUser Post view on getting a viewset, how to give method specific permisssion in a viewset
-
+# IsProjectAdmin .........Admins from members
+# how to make creator a compulsory member ..........has_perm
 class CardPermissions(BasePermission):
 
     def check_staff_access(self, request):
@@ -110,3 +99,6 @@ class CardPermissions(BasePermission):
             return request.user.is_active
         else:
             return CardAssignPermissionorAccess().has_permission(request=request, view=view)
+
+
+#how to give method specific permisssion in a viewset
