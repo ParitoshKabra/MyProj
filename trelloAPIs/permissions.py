@@ -34,8 +34,6 @@ class ListPermissions(BasePermission):
             return True
         return request.user.is_staff
 
-
-
     def has_object_permission(self, request, view, obj):
         if request.method == "GET":
             if request.user in obj.cards_list.list_projects.members.all():
@@ -44,8 +42,6 @@ class ListPermissions(BasePermission):
             if request.user is obj.created_by:
                 return True
         return self.check_staff_access(request)
-# only card creator/ project-admins should be able to assign cards, what my view should be for it
-# any authenticated user should be able to see his assigned cards (normal function based view is okayy)
 
 class CanCommentorViewComments(BasePermission):
     def check_staff_access(self, request):
@@ -77,17 +73,13 @@ class CardAssignPermissionorAccess(BasePermission):
     def has_permission(self, request, view):
         try:
             super().has_permission(request, view)
-            print(request.data)
-            print(request.method)
             if self.check_staff_access(request) == False:
                 list_ = Lists.objects.get(id = request.data.get('cards_list'))
                 project = list_.lists_project
-                print(project)
                 lt = [user.id for user in project.members.all()]
                 user_id = request.user.id
                 assigned_users = request.data.getlist("assigned_to")
-                print(assigned_users)
-                print(lt)
+
                 if user_id not in lt:
                     self.message = "You are not a member of project or an admin"
                     raise PermissionDenied(self.message)
@@ -102,30 +94,12 @@ class CardAssignPermissionorAccess(BasePermission):
                     for id in assigned_users:
                         print(id)
                         if not int(id) in lt:
-                            print(f"{id}: came in this nested last if")
-                            print(self.message)
                             raise PermissionDenied(self.message)
-                print("finally came here")
-                # for id in request.data.getlist("assigned_to"):
-                #     for project_ids in lt:
-                #         if id != project_ids:
-                #             return False
             return True
         except Lists.DoesNotExist:
             return True
 # get_permission ,assigned_cards, IsAdminUser Post view on getting a viewset, how to give method specific permisssion in a viewset
-"""{
-        "id": 20,
-        "comments_in_card": [],
-        "created_by": 12548,
-        "title": "sdsd",
-        "descp": "<p>sdaff<strong>g<em>gfh<u>dfdf</u></em></strong></p>",
-        "due_date": "2021-09-08T13:10:01Z",
-        "cards_list": 8,
-        "assigned_to": [
-            12548
-        ]
-    }"""
+
 class CardPermissions(BasePermission):
 
     def check_staff_access(self, request):
