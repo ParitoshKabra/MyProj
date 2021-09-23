@@ -40,9 +40,15 @@ class ProjectSerializer(serializers.ModelSerializer):
         model = Projects
         fields = '__all__'
 
+class UserProjectSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    class Meta:
+        model = Projects
+        fields = ['title', 'descp', 'id']
+
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    projects_of_user = ProjectSerializer(many=True, read_only = True)
+    projects_of_user = UserProjectSerializer(many=True, read_only = True)
     comments_of_user = CommentSerializer(many=True, read_only=True)
     assigned_cards = CardSerializer(many=True, read_only=True)
     class Meta:
@@ -52,3 +58,8 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 
+# same for members serializer
+# assigned_to MemberSerializer()
+# user vs users, use different serializers 
+# change view or serializer , add creator to member 
+# generic.ListApiViewSet and password issue

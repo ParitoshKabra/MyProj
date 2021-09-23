@@ -87,8 +87,8 @@ class CardAssignPermissionorAccess(BasePermission):
             return True
         except Lists.DoesNotExist:
             return True
-# IsProjectAdmin .........Admins from members
-# how to make creator a compulsory member ..........has_perm
+# IsProjectAdmin .........Admins from members, admin must be a member of project
+# how to make creator a compulsory member ..........has_perm, has_object_permissions
 class CardPermissions(BasePermission):
 
     def check_staff_access(self, request):
@@ -101,4 +101,5 @@ class CardPermissions(BasePermission):
             return CardAssignPermissionorAccess().has_permission(request=request, view=view)
 
 
-#how to give method specific permisssion in a viewset
+# how to give method specific permisssion in a viewset
+# pagination in djangorest, modified project only fetched
