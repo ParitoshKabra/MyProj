@@ -12,7 +12,7 @@ class ProjectPermission(BasePermission):
         return request.user.is_authenticated
     #error here
     def has_object_permission(self, request, view, obj):
-        if request.method != "GET":
+        if request.method not in SAFE_METHODS:
             if request.user in obj.admins.all() or request.user == obj.created_by:
                 return True
             return request.user.is_staff
