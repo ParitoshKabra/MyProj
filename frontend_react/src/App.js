@@ -21,6 +21,7 @@ function App() {
     axios
     .get("http://127.0.0.1:8000/trelloAPIs/check_login")
     .then(response =>{
+      console.log(response)
       if(response.data.loggedin === true && loggedin === false){
           setLoggedin(true);
       }

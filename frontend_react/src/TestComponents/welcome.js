@@ -9,7 +9,7 @@ export const Welcome = (props) => {
 	const getUser = () => {
 		if (props.loginStatus) {
 			axios
-				.get('http://127.0.0.1:8000/trelloAPIs/user')
+				.get('http://127.0.0.1:8000/trelloAPIs/user', {withCredentials : true})
 				.then((res) => {
 					console.log(res);
 					setUser(res.data[0]);

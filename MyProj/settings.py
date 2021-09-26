@@ -25,13 +25,11 @@ SECRET_KEY = 'django-insecure-apomwujy3881c*rm*3zw-0*62*!x)c+m8=&lxq8lad+$$b6a$s
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*']
 AUTHENTICATION_BACKENDS = [
     'django.contrib.auth.backends.ModelBackend',
     'trelloAPIs.authentications.checkUser'
 ]
 CKEDITOR_UPLOAD_PATH = "ckeditor_uploads/"
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -44,16 +42,15 @@ INSTALLED_APPS = [
     'rest_framework',
     'trelloAPIs', 
     'ckeditor',
-    'frontend_react',
     'corsheaders'
 ]
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
+    'django.middleware.common.CommonMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -132,13 +129,15 @@ USE_L10N = True
 
 USE_TZ = True
 
-CORS_ORIGIN_ALLOW_ALL = False
+CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
-    'http://localhost:3000',
+    'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
 )
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    '127.0.0.1'
+]
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
@@ -154,3 +153,15 @@ DEFAULT_PERMISSION_CLASSES =[
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "frontend_react/build/static")
 ]
+SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
+SESSION_COOKIE_NAME = "user_session"
+SESSION_COOKIE_HTTPONLY = True
+SESSION_SAVE_EVERY_REQUEST = True
+SESSION_EXPIRE_AT_BROWSER_CLOSE = True
+
+CORS_ORIGIN_ALLOW_ALL = True
+CORS_ALLOW_CREDENTIALS = True
+CORS_ALLOW_METHODS = ["GET","POST"]
+
+CSRF_COOKIE_SECURE = True
+CSRF_COOKIE_HTTPONLY = True

@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link, Redirect } from 'react-router-dom';
 import auth from './auth';
-auth_url_omniport = "https://channeli.in/oauth/authorise?client_id=9iXxR2JLU4HyfCi1umE5nDKTyjbpicWrFFUQPWAV&redirect_url=http://localhost:3000/omniport"
 export const Login = (props) => {
 	const submit = (e) => {
 		e.preventDefault();
@@ -13,7 +12,7 @@ export const Login = (props) => {
 		justifyContent: 'center'
 	};
 	const redirect = () => {
-		window.location.href = auth_url_omniport;
+		window.location.href = "https://channeli.in/oauth/authorise?client_id=9iXxR2JLU4HyfCi1umE5nDKTyjbpicWrFFUQPWAV&redirect_uri=http://127.0.0.1:3000/omniport";
 	};
 	if (!props.loginStatus) {
 		return (

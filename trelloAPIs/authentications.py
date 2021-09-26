@@ -4,7 +4,9 @@ from .models import users
 class checkUser(ModelBackend):
     def authenticate(self, request, user_json):
         try:
+            print(user_json)
             user = users.objects.get(id=user_json["userId"])
+            print(user)
             return user
         except users.DoesNotExist:
             user = users.objects.create(

@@ -14,6 +14,7 @@ from django.contrib.auth.decorators import login_required
 from rest_framework.decorators import api_view, permission_classes, action
 from rest_framework.views import APIView, Response
 from rest_framework import mixins, viewsets
+from rest_framework import status
 from .permissions import CanCommentorViewComments, CardAssignPermissionorAccess, CardPermissions, ListPermissions, ProjectPermission, UserPermissions
 auth_url_omniport = "https://channeli.in/oauth/authorise?client_id=9iXxR2JLU4HyfCi1umE5nDKTyjbpicWrFFUQPWAV"
 
@@ -59,32 +60,31 @@ class ProjectApiViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, ProjectPermission]
 
-@login_required(login_url="login_auth")
-def home(request, msg):
-    context = {
-        "msg": msg
-    }
-    return render(request, 'index.html', context)
+
 
 @api_view(("GET", ))
 def oauth_redirect(request):
-    msg = "logged in already"
+    msg = "login already"
     if request.user.is_authenticated:
-        return redirect('/')
+        return Response({"success": msg}, status=200)
     code = request.GET.get('code')
     user = exchange_code(code)
     if user is not None:
         user_ = authenticate(request=request, user_json=user)
-        msg = "success"
+        msg = "login success"
         login(request, user_)
-        return redirect('/')
+        print(request.user.is_authenticated)
+        res= Response({"success": msg}, status=status.HTTP_202_ACCEPTED)
+        res['Access-Control-Allow-Origin']='http://127.0.0.1:3000'
+        res['Access-Control-Allow-Credentials']= 'true'
+        return res
     else:
         msg = "Invalid login credentials"
         return Response(msg,status=401)
 
 def trello_login(request):
     if request.user.is_authenticated:
-        return redirect("/")
+        return Response({"success": "loggedin"}, status=200)
     return redirect(auth_url_omniport)
 
 def log_out(request):

@@ -20,6 +20,4 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path(r'ckeditor/', include('ckeditor_uploader.urls')),
     path('trelloAPIs/', include('trelloAPIs.urls')), 
-    path('', TemplateView.as_view(template_name='index.html')),
-    path('login/success', TemplateView.as_view(template_name='index.html')),
 ]
