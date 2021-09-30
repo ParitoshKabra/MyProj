@@ -69,7 +69,11 @@ class UserSerializer(serializers.ModelSerializer):
         model = users
         fields = ['id', 'username', 'projects_of_user','comments_of_user', 'assigned_cards', 'is_staff', 'is_superuser', 'email']
 
-
+class ProjectMemberSerializer(serializers.ModelSerializer):
+    members = UserListSerializer(read_only = True, many = True)
+    class Meta:
+        model = Projects
+        fields = ['members']
 
 # same for members serializer
 # assigned_to MemberSerializer()

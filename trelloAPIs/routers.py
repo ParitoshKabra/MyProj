@@ -1,6 +1,6 @@
 from trelloAPIs.models import Comments
 from rest_framework import routers
-from .views import CardApiViewSet, CommentApiViewSet, ListApiViewSet, UserApiViewSet, UserListApiViewSet, ProjectApiViewSet
+from .views import CardApiViewSet, CommentApiViewSet, ListApiViewSet, ProjectMemberApiviewSet, UserApiViewSet, UserListApiViewSet, ProjectApiViewSet
 
 router = routers.DefaultRouter()
 router.register('users_all', UserListApiViewSet)
@@ -9,3 +9,4 @@ router.register('projects', ProjectApiViewSet)
 router.register('lists', ListApiViewSet)
 router.register('cards', CardApiViewSet)
 router.register('comments', CommentApiViewSet)
+router.register('project_members', ProjectMemberApiviewSet, basename="project_members")

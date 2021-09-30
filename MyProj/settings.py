@@ -153,12 +153,6 @@ DEFAULT_PERMISSION_CLASSES =[
 STATICFILES_DIRS = [
     os.path.join(BASE_DIR, "frontend_react/build/static")
 ]
-SESSION_ENGINE = "django.contrib.sessions.backends.signed_cookies"
-SESSION_COOKIE_NAME = "user_session"
-SESSION_COOKIE_HTTPONLY = True
-SESSION_SAVE_EVERY_REQUEST = True
-SESSION_EXPIRE_AT_BROWSER_CLOSE = True
-
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_METHODS = ["GET","POST"]

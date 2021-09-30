@@ -56,6 +56,9 @@ class CanCommentorViewComments(BasePermission):
                 # print("thsi was checked") #why!
                 return True
             return self.check_staff_access(request)
+
+
+
 class CardAssignPermissionorAccess(BasePermission):
     message = "Cannot assign card to a user who is not the member of the project"
     
@@ -66,6 +69,10 @@ class CardAssignPermissionorAccess(BasePermission):
         try:
             if self.check_staff_access(request) == False:
                 list_ = Lists.objects.get(id = request.data.get('cards_list'))
+                creator = request.data.get('created_by')
+                if creator != request.user:
+                    self.message = "user creating card must be its creator"
+                    raise PermissionDenied(self.message)
                 project = list_.lists_project
                 lt = [user.id for user in project.members.all()]
                 user_id = request.user.id
@@ -84,9 +91,16 @@ class CardAssignPermissionorAccess(BasePermission):
                         print(id)
                         if not int(id) in lt:
                             raise PermissionDenied(self.message)
+            print("I am admin")
             return True
         except Lists.DoesNotExist:
             return True
+            # if request.method in SAFE_METHODS:
+            #     return True
+            # else:
+            #     print(f"came here on {request.method}")
+            #     self.message = "List does not exist"
+            #     raise PermissionDenied(self.message)
 # IsProjectAdmin .........Admins from members, admin must be a member of project
 # how to make creator a compulsory member ..........has_perm, has_object_permissions
 class CardPermissions(BasePermission):
@@ -96,10 +110,14 @@ class CardPermissions(BasePermission):
 
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
+            print(f"{request.method}")
+            print(request.user.is_active)
             return request.user.is_active
         else:
             return CardAssignPermissionorAccess().has_permission(request=request, view=view)
 
+    def has_object_permission(self, request, view, obj):
+        return super().has_object_permission(request, view, obj)
 
 # how to give method specific permisssion in a viewset
 # pagination in djangorest, modified project only fetched

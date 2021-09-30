@@ -1,5 +1,6 @@
 import re
 from django.contrib.auth.models import User
+from django.middleware.csrf import get_token
 from django.http.response import Http404, JsonResponse, HttpResponse
 from django.shortcuts import redirect, render
 from rest_framework.parsers import JSONParser
@@ -28,7 +29,13 @@ class UserApiViewSet(viewsets.ModelViewSet):
     permission_classes = [IsAuthenticated, UserPermissions]
 
     def get_queryset(self):
+        
         return users.objects.filter(id=self.request.user.id)
+
+class ProjectMemberApiviewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+    serializer_class = ProjectMemberSerializer
+    queryset = Projects.objects.all()
+
     
 
 class ListApiViewSet(viewsets.ModelViewSet):
@@ -72,11 +79,8 @@ def oauth_redirect(request):
     if user is not None:
         user_ = authenticate(request=request, user_json=user)
         msg = "login success"
-        login(request, user_)
-        print(request.user.is_authenticated)
-        res= Response({"success": msg}, status=status.HTTP_202_ACCEPTED)
-        res['Access-Control-Allow-Origin']='http://127.0.0.1:3000'
-        res['Access-Control-Allow-Credentials']= 'true'
+        login(request, user_) 
+        res= Response({"sessionid": request.session._session_key, "csrftoken": get_token(request)}, status=status.HTTP_202_ACCEPTED)
         return res
     else:
         msg = "Invalid login credentials"
