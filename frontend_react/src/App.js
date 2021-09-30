@@ -20,9 +20,10 @@ const theme = createTheme({
 export default class App extends React.Component {
 	constructor(props) {
 		super(props);
-		this.state = { loggedin: false };
+		this.state = { loggedin: false, user:{} };
 
 		this.checkLoginStatus = this.checkLoginStatus.bind(this);
+		this.getUser = this.getUser.bind(this);
 	}
 	//once the user is logged in sidebar should be there with every component
 	render() {
@@ -39,7 +40,7 @@ export default class App extends React.Component {
 									{...props}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
-								/>
+								user={this.state.user}/>
 							) : (
 								<Redirect to="/dashboard" />
 							);
@@ -54,6 +55,7 @@ export default class App extends React.Component {
 									{...props}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
+									user={this.state.user}
 								/>
 							);
 						}}
@@ -67,6 +69,7 @@ export default class App extends React.Component {
 									{...props}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
+									user={this.state.user}
 								/>
 							);
 						}}
@@ -75,14 +78,14 @@ export default class App extends React.Component {
 						exact
 						path="/omniport"
 						render={(props) => {
-							return <Omniport {...props} />;
+							return <Omniport {...props}  user={this.state.user}/>;
 						}}
 					/>
 					<Route
 						exact
 						path="/createCard/:id/:projectid"
 						render={(props) => {
-							return <CreateCard {...props} />;
+							return <CreateCard {...props} user={this.state.user}/>;
 						}}
 					/>
 				</Router>
@@ -92,6 +95,7 @@ export default class App extends React.Component {
 	componentDidMount() {
 		console.log('DidMount called');
 		this.checkLoginStatus();
+		this.getUser();
 	}
 	checkLoginStatus = () => {
 		axios
@@ -108,6 +112,18 @@ export default class App extends React.Component {
 				console.log('checking error...', error);
 			});
 	};
+	getUser = () =>{
+		axios
+		.get('http://127.0.0.1:8000/trelloAPIs/user', {withCredentials: true})
+		.then(res=>{
+			console.log(res);
+			console.log(res.data[0]);
+			this.setState({user: res.data[0]});
+		})
+		.catch(error=>{
+			console.log(error);
+		})
+	}
 }
 // How to give dynamic path in router
 // how to go to the path if loggedin after refresh

@@ -32,7 +32,7 @@ class UserApiViewSet(viewsets.ModelViewSet):
         
         return users.objects.filter(id=self.request.user.id)
 
-class ProjectMemberApiviewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
+class ProjectMemberApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = ProjectMemberSerializer
     queryset = Projects.objects.all()
 
@@ -67,8 +67,64 @@ class ProjectApiViewSet(viewsets.ModelViewSet):
     serializer_class = ProjectSerializer
     permission_classes = [IsAuthenticated, ProjectPermission]
 
+    def create(self, request, *args, **kwargs):
+        data_ = request.data
+        data_._mutable = True
+        creator = data_['created_by']
+        data_['created_by'] = request.user.id
+        members = data_.pop('members')
+        admins = data_.pop('admins')
+        b = self.check_creator(creator, members)
+        if b:
+            members.append(creator)
+            data_.setlist('members',members)
+        b = self.check_creator(creator, admins)
+        if b:
+            admins.append(creator)
+            data_.setlist('admins',admins)
 
+        b1 = False
+        for item in admins:
+            if item not in members:
+                b1 = True
+        
+        serializer = self.get_serializer(data=data_)
+        serializer.is_valid(raise_exception=True)
+        if not b1:
+            self.perform_create(serializer)
+        else:
+            return Response({"error": "admins must be members of the project"}, status=status.HTTP_400_BAD_REQUEST)
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        members = request.data.getlist('members')
+        if request.data['created_by'] not in members:
+            return Response({"error": "can't remove creator of a project"}, status.HTTP_400_BAD_REQUEST)
+         
+        if request.data['created_by'] not in request.data.getlist('admins'):
+            return Response({"error": "creator can't be removed from admin"}, status.HTTP_400_BAD_REQUEST)         
+        
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        return Response(serializer.data)
+
+    def check_creator(self, creator, *args ):
+        for item in args:
+            if item == creator:
+                return False
+        return True
+
+    
 @api_view(("GET", ))
 def oauth_redirect(request):
     msg = "login already"

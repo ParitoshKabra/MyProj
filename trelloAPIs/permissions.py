@@ -1,5 +1,5 @@
 from django.http.response import HttpResponse, JsonResponse
-from rest_framework.exceptions import PermissionDenied
+from rest_framework.exceptions import PermissionDenied, ValidationError
 from rest_framework.permissions import SAFE_METHODS, BasePermission
 from .models import Lists, Projects
 
@@ -13,7 +13,7 @@ class ProjectPermission(BasePermission):
     #error here
     def has_object_permission(self, request, view, obj):
         if request.method not in SAFE_METHODS:
-            if request.user in obj.admins.all() or request.user == obj.created_by:
+            if request.user in obj.admins.all():
                 return True
             return request.user.is_staff
         else:
@@ -67,19 +67,23 @@ class CardAssignPermissionorAccess(BasePermission):
 
     def has_permission(self, request, view):
         try:
+            print("yahan ghusa huu")
             if self.check_staff_access(request) == False:
                 list_ = Lists.objects.get(id = request.data.get('cards_list'))
                 creator = request.data.get('created_by')
-                if creator != request.user:
+                print(creator, request.user.id)
+                if int(creator) != int(request.user.id):
                     self.message = "user creating card must be its creator"
-                    raise PermissionDenied(self.message)
+                    print(self.message)
+                    raise ValidationError(self.message, code=410)
                 project = list_.lists_project
                 lt = [user.id for user in project.members.all()]
                 user_id = request.user.id
-                assigned_users = request.data.getlist("assigned_to")
-
+                assigned_users = request.data.get("assigned_to")
+                print(assigned_users)
                 if user_id not in lt:
                     self.message = "You are not a member of project or an admin"
+                    print(self.message)
                     raise PermissionDenied(self.message)
                 lt.sort()
                 assigned_users.sort()
@@ -90,7 +94,8 @@ class CardAssignPermissionorAccess(BasePermission):
                     for id in assigned_users:
                         print(id)
                         if not int(id) in lt:
-                            raise PermissionDenied(self.message)
+                            print(self.message)
+                            raise ValidationError(self.message, code=410)
             print("I am admin")
             return True
         except Lists.DoesNotExist:

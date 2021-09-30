@@ -2,11 +2,42 @@ import React from 'react';
 import TextField from '@mui/material/TextField';
 import { MenuItem } from '@mui/material';
 import Button from '@mui/material/Button';
+import Select from '@mui/material/Select';
+import { Checkbox } from '@mui/material';
+import { ListItemIcon, ListItemText } from '@mui/material';
 import { Box } from '@mui/material';
 import { useState, useEffect } from 'react';
 import axios from 'axios';
+import { OutlinedInput } from '@mui/material';
+import Cookies from 'universal-cookie'
+import { useHistory } from 'react-router';
+
+const cookies = new Cookies()
+
 // import AdapterDateFns from '@mui/lab/AdapterDateFns';
 // import LocalizationProvider from '@mui/lab/LocalizationProvider';
+const ITEM_HEIGHT = 48;
+const ITEM_PADDING_TOP = 8;
+const MenuProps = {
+	PaperProps: {
+		style: {
+			maxHeight: ITEM_HEIGHT * 4.5 + ITEM_PADDING_TOP,
+			width: 250
+		}
+	}
+};
+const axiosInstance = axios.create({
+	baseURL: 'http://127.0.0.1:8000/trelloAPIs/',
+	timeout: 5000,
+	headers: {
+		'Content-Type': 'application/json'
+		// 'Accept': 'application/json'
+	}
+});
+axiosInstance.defaults.withCredentials = true;
+axiosInstance.defaults.xsrfCookieName = 'csrftoken';
+axiosInstance.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 
 export const CreateCard = (props) => {
 	// const [card, setcard] = useState({"card_list"})
@@ -16,38 +47,20 @@ export const CreateCard = (props) => {
 	const [ descp, setDescp ] = useState('');
 	const [ datetime, setDateTime ] = useState(new Date());
 	const [ assigned_to, setAssigned_to ] = useState([]);
-	const [members, setMembers] = useState([]);
+	const [ assigned_toU, setAssigned_toU ] = useState([]);
+	const [ members, setMembers ] = useState({});
 	// created_by, list
-	console.log(props);
+	const [ errorassign, setErrorAssign ] = useState(false);
+	const history = useHistory();
 	const handleCreateCard = async (e) => {
-		e.preventDefault();
 		setErrorTitle(false);
-		console.log(title, descp);
-		if (title === '') {
-			setErrorMsg('Required');
-			setErrorTitle(true);
-		} else {
-			const res = await axios
-				.get('http://127.0.0.1:8000/trelloAPIs/lists/' + props.match.params.id, { withCredentials: true })
-				.then((response) => {
-					console.log(response.data);
-					return response.data;
-				})
-				.catch((error) => {
-					console.log(error);
-					return error;
-				});
-			res.list_cards.forEach((item) => {
-				if (title === item.title) {
-					setErrorMsg('Choose a different title');
-					setErrorTitle(true);
-				}
-			});
-		}
-	};
-	const getMembers = async () => {
+		setErrorAssign(false);
+		setErrorMsg('');
+		let title_proxy = e.target.value;
+		// console.log(title, descp);
+
 		const res = await axios
-			.get('http://127.0.0.1:8000/trelloAPIs/projects/' + props.match.params.projectid, { withCredentials: true })
+			.get('http://127.0.0.1:8000/trelloAPIs/lists/' + props.match.params.id, { withCredentials: true })
 			.then((response) => {
 				console.log(response.data);
 				return response.data;
@@ -56,9 +69,117 @@ export const CreateCard = (props) => {
 				console.log(error);
 				return error;
 			});
-		setMembers(res.members);
+		res.list_cards.forEach((item) => {
+			if (title_proxy === item.title) {
+				setErrorMsg('Choose a different title');
+				setErrorTitle(true);
+			}
+		});
 	};
-	useEffect(getMembers, [members]);
+
+	const getMembers = async () => {
+		const res = await axios
+			.get('http://127.0.0.1:8000/trelloAPIs/project_members/' + props.match.params.projectid, {
+				withCredentials: true
+			})
+			.then((response) => {
+				console.log(response.data);
+				return response.data;
+			})
+			.catch((error) => {
+				console.log(error);
+				return error;
+			});
+		// console.log(fetchUsername(res['members']));
+		setMembers(res['members']);
+	};
+
+	useEffect(() => {
+		getMembers();
+	}, []);
+	useEffect(() => {}, []);
+	// const fetchUsername = (array) => {
+	// 	let usernames = [];
+	// 	for (let i = 0; i < array.length; i++) {
+	// 		usernames.push(array[i].username);
+	// 	}
+	// 	console.log(array.map((item) => item.username));
+	// 	return usernames;
+	// };
+
+	let choices = [];
+	if (Object.keys(members).length !== 0) {
+		choices = members.map((option) => {
+			return (
+				<MenuItem key={option.id} value={option.id}>
+					<ListItemIcon>
+						<Checkbox checked={assigned_to.indexOf(option.id) > -1} color="secondary" />
+					</ListItemIcon>
+					<ListItemText primary={option.username} />
+				</MenuItem>
+			);
+		});
+	} else {
+		choices = [
+			<MenuItem>Val - 1</MenuItem>,
+			<MenuItem>Val - 2</MenuItem>,
+			<MenuItem>Val - 3</MenuItem>,
+			<MenuItem>Val - 4</MenuItem>
+		];
+	}
+	const handleSelectChange = (event) => {
+		console.log(event.target.value);
+		console.log(assigned_toU, assigned_to);
+		setErrorAssign(false);
+		setAssigned_to(event.target.value);
+		let usernames = [];
+		for (let i = 0; i < event.target.value.length; i++) {
+			members.forEach((item) => {
+				if (item.id === event.target.value[i]) {
+					usernames.push(item.username);
+				}
+			});
+		}
+		setAssigned_toU(usernames);
+	};
+	const handleSubmit = (e) => {
+		e.preventDefault();
+		if (title === '') {
+			setErrorMsg('Required');
+			setErrorTitle(true);
+		}
+		if (assigned_to.length === 0) {
+			setErrorAssign(true);
+		}
+		if (!errorassign && !errorTitle) {
+			const data = {
+				cards_list: props.match.params.id,
+				created_by: props.user.id,
+				assigned_to: assigned_to,
+				title: title,
+				descp: descp,
+				due_date: datetime
+			};
+			console.log(data);
+			console.log(cookies.get("csrftoken"))
+			axiosInstance
+				.post('http://127.0.0.1:8000/trelloAPIs/cards/', data, {
+					headers: {
+					  'X-CSRFToken':  cookies.get("csrftoken"),
+					  'Content-Type': 'application/json',
+					  'X-Requested-With': 'XMLHttpRequest'
+					}
+				  })
+				.then((response) => {
+					console.log(response.data);
+					history.goBack();
+					
+				})
+				.catch((error) => {
+					console.log(error);
+				});
+		}
+	};
 	return (
 		<Box
 			component="form"
@@ -78,7 +199,10 @@ export const CreateCard = (props) => {
 				InputLabelProps={{
 					shrink: true
 				}}
-				onChange={(e) => setTitle(e.target.value)}
+				onChange={(e) => {
+					setTitle(e.target.value);
+					handleCreateCard(e);
+				}}
 				error={errorTitle}
 				helperText={errormsg}
 			/>
@@ -104,29 +228,24 @@ export const CreateCard = (props) => {
 				variant="outlined"
 				color="secondary"
 				sx={{ width: 250 }}
-				onchange={(e) => {
+				onChange={(e) => {
 					setDateTime(e.target.value);
 				}}
 			/>
-			<TextField
-				id="filled-select-currency"
-				select
-				color="secondary"
-				label="Assign To:"
-				onChange={(e) => {
-					console.log(e.target.value);
-					setAssigned_to(e.target.value);
-				}}
-				helperText="assign cards to project members"
-				variant="filled"
+			<Select
+				labelId="demo-multiple-checkbox-label"
+				id="demo-multiple-checkbox"
+				multiple
+				value={assigned_to}
+				input={<OutlinedInput label="Assign To" />}
+				onChange={handleSelectChange}
+				renderValue={(assigned_toU) => assigned_toU.join(', ')}
+				MenuProps={MenuProps}
+				error={errorassign}
 			>
-				{members.map((option) => (
-					<MenuItem key={option} value={option}>
-						{option.label}
-					</MenuItem>
-				))}
-			</TextField>
-			<Button variant="contained" color="secondary" type="submit" onClick={handleCreateCard}>
+				{choices}
+			</Select>
+			<Button variant="contained" color="secondary" type="submit" onClick={handleSubmit}>
 				Submit
 			</Button>
 		</Box>

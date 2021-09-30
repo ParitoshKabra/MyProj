@@ -41,11 +41,10 @@ export const MyList = (props) => {
 		if (listContent['list_cards']) {
 			cards = listContent.list_cards.map((card) => {
 				return (
-                    <>
 					<Button variant="outlined" color="secondary" key={card.id} endIcon={<EditRoundedIcon/>} >
 						{card.title}
 					</Button>
-                    </>
+
 				);
 			});
 		} else {
