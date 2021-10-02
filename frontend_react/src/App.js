@@ -5,17 +5,31 @@ import { Welcome } from './TestComponents/welcome';
 import { Omniport } from './TestComponents/omniport';
 import { ListProject } from './TestComponents/listproject';
 import { CreateCard } from './TestComponents/CreateCard';
+import CreateProject from './TestComponents/CreateProject';
 import { createTheme, ThemeProvider } from '@mui/material';
 import axios from 'axios';
 import { BrowserRouter as Router, Switch, Route, Redirect } from 'react-router-dom';
-
+import { Sidebar } from './TestComponents/sidebar';
 const theme = createTheme({
 	palette: {
 		primary: {
-			main: '#fefefe'
+			main: '#4def5a'
 		}
 	}
 });
+
+const axiosInstance = axios.create({
+	baseURL: 'http://127.0.0.1:8000/trelloAPIs/',
+	timeout: 5000,
+	headers: {
+		'Content-Type': 'application/json'
+		// 'Accept': 'application/json'
+	}
+});
+axiosInstance.defaults.withCredentials = true;
+axiosInstance.defaults.xsrfCookieName = 'csrftoken';
+axiosInstance.defaults.xsrfHeaderName = 'X-CSRFToken';
+
 
 export default class App extends React.Component {
 	constructor(props) {
@@ -32,6 +46,14 @@ export default class App extends React.Component {
 				<Router>
 					<h1>Trello App</h1>
 					<Route
+					path="/"
+					render={
+						(props) =>{
+							return this.state.loggedin ? (<Sidebar {...props} user={this.state.user} getUser={this.getUser} />) : (<></>);
+						}
+					}
+					/>
+					<Route
 						exact
 						path="/"
 						render={(props) => {
@@ -40,7 +62,9 @@ export default class App extends React.Component {
 									{...props}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
-								user={this.state.user}/>
+									user={this.state.user}
+									getUser={this.getUser}
+								/>
 							) : (
 								<Redirect to="/dashboard" />
 							);
@@ -56,6 +80,7 @@ export default class App extends React.Component {
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
 									user={this.state.user}
+									getUser={this.getUser}
 								/>
 							);
 						}}
@@ -67,9 +92,12 @@ export default class App extends React.Component {
 							return (
 								<ListProject
 									{...props}
+									uniqueId={props.match.params.id}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
 									user={this.state.user}
+									getUser={this.getUser}
+									axiosInstance={axiosInstance}
 								/>
 							);
 						}}
@@ -78,14 +106,21 @@ export default class App extends React.Component {
 						exact
 						path="/omniport"
 						render={(props) => {
-							return <Omniport {...props}  user={this.state.user}/>;
+							return <Omniport {...props}  user={this.state.user} getUser={this.getUser}/>;
 						}}
 					/>
 					<Route
 						exact
 						path="/createCard/:id/:projectid"
 						render={(props) => {
-							return <CreateCard {...props} user={this.state.user}/>;
+							return <CreateCard {...props} user={this.state.user} axiosInstance={axiosInstance} loginStatus={this.state.loggedin} getUser={this.getUser}/>;
+						}}
+					/>
+					<Route
+						exact
+						path="/createProject"
+						render={(props) => {
+							return <CreateProject {...props} user={this.state.user} axiosInstance={axiosInstance} loginStatus={this.state.loggedin} getUser={this.getUser}/>;
 						}}
 					/>
 				</Router>
@@ -116,8 +151,7 @@ export default class App extends React.Component {
 		axios
 		.get('http://127.0.0.1:8000/trelloAPIs/user', {withCredentials: true})
 		.then(res=>{
-			console.log(res);
-			console.log(res.data[0]);
+			console.log("user data", res.data[0]);
 			this.setState({user: res.data[0]});
 		})
 		.catch(error=>{
@@ -127,3 +161,4 @@ export default class App extends React.Component {
 }
 // How to give dynamic path in router
 // how to go to the path if loggedin after refresh
+// Main Components : Modify/Delete request on cards, lists

@@ -35,7 +35,11 @@ class ListPermissions(BasePermission):
         return request.user.is_active 
     #error
     def has_object_permission(self, request, view, obj):
-        if request.user in obj.lists_project.members.all() or request.user == obj.lists_project.created_by or request.user.is_staff or request.user.is_superuser:
+        if request.method in SAFE_METHODS:
+            return request.user.is_authenticated
+        elif request.method == "POST" and request.user in obj.lists_project.members.all():
+            return True
+        elif request.user in obj.lists_project.admins.all() or request.user.is_staff or request.user.is_superuser:
             return True
         return False
 

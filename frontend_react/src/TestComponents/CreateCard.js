@@ -26,17 +26,6 @@ const MenuProps = {
 		}
 	}
 };
-const axiosInstance = axios.create({
-	baseURL: 'http://127.0.0.1:8000/trelloAPIs/',
-	timeout: 5000,
-	headers: {
-		'Content-Type': 'application/json'
-		// 'Accept': 'application/json'
-	}
-});
-axiosInstance.defaults.withCredentials = true;
-axiosInstance.defaults.xsrfCookieName = 'csrftoken';
-axiosInstance.defaults.xsrfHeaderName = 'X-CSRFToken';
 
 
 export const CreateCard = (props) => {
@@ -54,7 +43,6 @@ export const CreateCard = (props) => {
 	const history = useHistory();
 	const handleCreateCard = async (e) => {
 		setErrorTitle(false);
-		setErrorAssign(false);
 		setErrorMsg('');
 		let title_proxy = e.target.value;
 		// console.log(title, descp);
@@ -69,6 +57,9 @@ export const CreateCard = (props) => {
 				console.log(error);
 				return error;
 			});
+		if(title_proxy === ''){
+			setErrorTitle(true);
+		}
 		res.list_cards.forEach((item) => {
 			if (title_proxy === item.title) {
 				setErrorMsg('Choose a different title');
@@ -95,8 +86,14 @@ export const CreateCard = (props) => {
 	};
 
 	useEffect(() => {
+		if(!props.loginStatus){
+			props.history.push("/");
+		}
 		getMembers();
+		props.getUser();
+		
 	}, []);
+	
 	useEffect(() => {}, []);
 	// const fetchUsername = (array) => {
 	// 	let usernames = [];
@@ -131,6 +128,9 @@ export const CreateCard = (props) => {
 		console.log(event.target.value);
 		console.log(assigned_toU, assigned_to);
 		setErrorAssign(false);
+		if(event.target.value.length === 0){
+			setErrorAssign(true);
+		}
 		setAssigned_to(event.target.value);
 		let usernames = [];
 		for (let i = 0; i < event.target.value.length; i++) {
@@ -144,6 +144,7 @@ export const CreateCard = (props) => {
 	};
 	const handleSubmit = (e) => {
 		e.preventDefault();
+		
 		if (title === '') {
 			setErrorMsg('Required');
 			setErrorTitle(true);
@@ -152,6 +153,7 @@ export const CreateCard = (props) => {
 			setErrorAssign(true);
 		}
 		if (!errorassign && !errorTitle) {
+			console.log(props)
 			const data = {
 				cards_list: props.match.params.id,
 				created_by: props.user.id,
@@ -162,7 +164,7 @@ export const CreateCard = (props) => {
 			};
 			console.log(data);
 			console.log(cookies.get("csrftoken"))
-			axiosInstance
+			props.axiosInstance
 				.post('http://127.0.0.1:8000/trelloAPIs/cards/', data, {
 					headers: {
 					  'X-CSRFToken':  cookies.get("csrftoken"),

@@ -13,7 +13,13 @@ const useStyles = makeStyles({
     btn: {
         fontSize: "16px",
 		border: "50%"
-    }
+    },
+	container: {
+		maxWidth: "148px",
+		maxHeight: "200px",
+		overflow: "auto",
+		border: "2px solid red"
+	}
 });
 
 export const MyList = (props) => {
@@ -51,7 +57,7 @@ export const MyList = (props) => {
 			cards = 'Loading cards...';
 		}
 		return (
-			<Stack spacing={2} maxWidth="148px" width="148px" border="2px solid red">
+			<Stack spacing={2} className={classes.conatainer}>
 				<Typography variant="h6" gutterBottom align="center">{listContent.title}</Typography>
 				<Stack spacing={1.2}>{cards}</Stack>
 

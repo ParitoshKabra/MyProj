@@ -11,7 +11,7 @@ export class Project extends React.Component{
     componentDidMount(){
     }
     renderLists(){
-        
+        this.props.setAsActive(this.props.project);
         this.props.history.push("/project/"+this.props.project.id);
     }
     render(){

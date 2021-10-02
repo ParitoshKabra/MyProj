@@ -16,7 +16,6 @@ class Projects(models.Model):
     created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="created_projects")
     members = models.ManyToManyField(users, related_name="projects_of_user")
     admins = models.ManyToManyField(users, related_name="projects_of_user_as_admin") 
-    #can make admin, how to ensure admin as a member/ creator seperate from member
     def __str__(self):
         return f"{self.title}"
     

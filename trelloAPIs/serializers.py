@@ -44,7 +44,7 @@ class UserProjectSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model = Projects
-        fields = ['title', 'descp', 'id']
+        fields = ['title', 'descp', 'id', 'members', 'admins', 'created_by']
 
 # create a better serializer structure        
 

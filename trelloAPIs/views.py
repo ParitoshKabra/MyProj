@@ -69,7 +69,8 @@ class ProjectApiViewSet(viewsets.ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data_ = request.data
-        data_._mutable = True
+        print(data_)
+        # data_._mutable = True
         creator = data_['created_by']
         data_['created_by'] = request.user.id
         members = data_.pop('members')
@@ -77,11 +78,11 @@ class ProjectApiViewSet(viewsets.ModelViewSet):
         b = self.check_creator(creator, members)
         if b:
             members.append(creator)
-            data_.setlist('members',members)
+            data_['members'] = members
         b = self.check_creator(creator, admins)
         if b:
             admins.append(creator)
-            data_.setlist('admins',admins)
+            data_['admins']= admins
 
         b1 = False
         for item in admins:

@@ -4,6 +4,8 @@
     "private": true,
     "proxy": "http://127.0.0.1:8000/",
     "dependencies": {
+        "@ckeditor/ckeditor5-build-classic": "^30.0.0",
+        "@ckeditor/ckeditor5-react": "^3.0.2",
         "@date-io/date-fns": "^2.11.0",
         "@emotion/react": "^11.4.1",
         "@emotion/styled": "^11.3.0",
@@ -48,5 +50,8 @@
             "last 1 firefox version",
             "last 1 safari version"
         ]
+    },
+    "devDependencies": {
+        "ra-input-rich-text": "^3.18.3"
     }
 }
