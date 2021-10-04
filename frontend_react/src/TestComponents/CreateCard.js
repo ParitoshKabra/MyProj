@@ -28,29 +28,47 @@ const MenuProps = {
 };
 
 
+
 export const CreateCard = (props) => {
+
 	// const [card, setcard] = useState({"card_list"})
 	const [ title, setTitle ] = useState('');
 	const [ errorTitle, setErrorTitle ] = useState(false);
 	const [ errormsg, setErrorMsg ] = useState('');
-	const [ descp, setDescp ] = useState('');
-	const [ datetime, setDateTime ] = useState(new Date());
+	const [ descp, setDescp ] = useState('none');
+	const [ datetime, setDateTime ] = useState((new Date()).toISOString());
 	const [ assigned_to, setAssigned_to ] = useState([]);
-	const [ assigned_toU, setAssigned_toU ] = useState([]);
+	const [ assigned_toU, setAssigned_toU ] = useState([]); //how to fix this??
 	const [ members, setMembers ] = useState({});
 	// created_by, list
 	const [ errorassign, setErrorAssign ] = useState(false);
 	const history = useHistory();
+	const checkEdit = ()=>{
+		console.log("Ia m checkEdit", props.edit, props.card);
+		if(props.edit){
+			console.log(props.card);
+			setTitle(props.card['title']);
+			setDescp(props.card['descp']);
+			setAssigned_to(props.card['assigned_to']);
+			setDateTime(props.card['due_date']);
+		}
+	}
 	const handleCreateCard = async (e) => {
 		setErrorTitle(false);
 		setErrorMsg('');
 		let title_proxy = e.target.value;
 		// console.log(title, descp);
-
+		let list_id;
+		if(props.edit){
+			list_id = props.card['cards_list']; 
+		}
+		else{
+			list_id = props.match.params.id;
+		}
 		const res = await axios
-			.get('http://127.0.0.1:8000/trelloAPIs/lists/' + props.match.params.id, { withCredentials: true })
+			.get('http://127.0.0.1:8000/trelloAPIs/lists/' + list_id, { withCredentials: true })
 			.then((response) => {
-				console.log(response.data);
+				console.log("titles in lists", response.data);
 				return response.data;
 			})
 			.catch((error) => {
@@ -62,19 +80,31 @@ export const CreateCard = (props) => {
 		}
 		res.list_cards.forEach((item) => {
 			if (title_proxy === item.title) {
-				setErrorMsg('Choose a different title');
-				setErrorTitle(true);
-			}
+				if(!props.edit || title_proxy !==props.card.title ){
+					setErrorMsg('Choose a different title');
+					setErrorTitle(true);
+				}
+		}
 		});
 	};
 
 	const getMembers = async () => {
+		console.log(props.edit, props);
+		let projectid;
+		if(props.edit){
+			console.log("came here", props.match.params)
+			projectid = props.match.params.id;
+		}
+		else{
+			projectid = props.match.params.projectid;
+		}
+		console.log("projectid", projectid);
 		const res = await axios
-			.get('http://127.0.0.1:8000/trelloAPIs/project_members/' + props.match.params.projectid, {
+			.get('http://127.0.0.1:8000/trelloAPIs/project_members/' + projectid, {
 				withCredentials: true
 			})
 			.then((response) => {
-				console.log(response.data);
+				console.log("members", response.data);
 				return response.data;
 			})
 			.catch((error) => {
@@ -89,6 +119,8 @@ export const CreateCard = (props) => {
 		if(!props.loginStatus){
 			props.history.push("/");
 		}
+		console.log("UseEffect is called");
+		checkEdit();
 		getMembers();
 		props.getUser();
 		
@@ -162,9 +194,10 @@ export const CreateCard = (props) => {
 				descp: descp,
 				due_date: datetime
 			};
-			console.log(data);
+			
 			console.log(cookies.get("csrftoken"))
-			props.axiosInstance
+			if(!props.edit){
+				props.axiosInstance
 				.post('http://127.0.0.1:8000/trelloAPIs/cards/', data, {
 					headers: {
 					  'X-CSRFToken':  cookies.get("csrftoken"),
@@ -180,6 +213,11 @@ export const CreateCard = (props) => {
 				.catch((error) => {
 					console.log(error);
 				});
+			}
+			else{
+				console.log("Updated Card sucessfully!!", data);
+				props.handleClose();
+			}
 		}
 	};
 	return (
@@ -201,6 +239,7 @@ export const CreateCard = (props) => {
 				InputLabelProps={{
 					shrink: true
 				}}
+				value={title}
 				onChange={(e) => {
 					setTitle(e.target.value);
 					handleCreateCard(e);
@@ -216,6 +255,7 @@ export const CreateCard = (props) => {
 				InputLabelProps={{
 					shrink: true
 				}}
+				value={descp}
 				multiline
 				onChange={(e) => setDescp(e.target.value)}
 				rows={4}
@@ -227,6 +267,7 @@ export const CreateCard = (props) => {
 				InputLabelProps={{
 					shrink: true
 				}}
+				value={datetime}
 				variant="outlined"
 				color="secondary"
 				sx={{ width: 250 }}
@@ -248,7 +289,7 @@ export const CreateCard = (props) => {
 				{choices}
 			</Select>
 			<Button variant="contained" color="secondary" type="submit" onClick={handleSubmit}>
-				Submit
+				{props.edit ? "Update" : "Submit"}
 			</Button>
 		</Box>
 	);

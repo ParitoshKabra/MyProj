@@ -13,7 +13,7 @@ import Cookies from 'universal-cookie';
 const ariaLabel = { 'aria-label': 'description' };
 const cookies = new Cookies();
 
-const MyAlert = ({ TitleMsg, TitleDetail, disableAlertState }) => {
+const MyAlert = ({ TitleMsg, TitleDetail, setTitleDetail, setTitleMsg, disableAlertState }) => {
 	useEffect(() => {
 		const timeout = setTimeout(() => {
 			disableAlertState();
@@ -65,6 +65,7 @@ function CreateList(props) {
 	const [ TitleMsg, setTitleMsg ] = useState('error');
 	const [ TitleDetail, setTitleDetail ] = useState('');
 	const [ showAlert, setShowAlert ] = useState(false);
+	const [created, setCreated] = useState(false);
 
 	useEffect(
 		() => {
@@ -72,6 +73,7 @@ function CreateList(props) {
 		},
 		[ submit ]
 	);
+	
 	const disableAlertState = () => {
 		setShowAlert(false);
 	};
@@ -79,7 +81,7 @@ function CreateList(props) {
 		e.preventDefault();
 		setSubmit(false);
 		console.log(TitleMsg);
-		if (TitleMsg === 'success') {
+		if (TitleMsg === 'success' && !created) {
 			const data = {
 				title: title,
 				lists_project: props.project.id
@@ -99,19 +101,21 @@ function CreateList(props) {
 					// redirect user to omniport to authenticate again
 					setShowAlert(true);
 					setSubmit(true);
+					setCreated(true);
 				})
 				.catch((error) => {
 					console.log(error);
 				});
 		} else {
 			console.log('error in title');
-      setShowAlert(true);
+      		setShowAlert(true);
 		}
 	};
 	const handleCreateList = (e) => {
 		setTitleMsg('success');
+		setCreated(false);
 		setTitleDetail('List created successfully!');
-    setShowAlert(false);
+    	setShowAlert(false);
 		console.log(e.target.value);
 		setTitle(e.target.value);
 		let title_proxy = e.target.value;
@@ -149,7 +153,7 @@ function CreateList(props) {
 				<AddTaskIcon />
 			</IconButton>
       {showAlert && (
-				<MyAlert TitleMsg={TitleMsg} TitleDetail={TitleDetail} disableAlertState={disableAlertState} />
+				<MyAlert TitleMsg={TitleMsg} TitleDetail={TitleDetail} setTitleMsg={setTitleMsg} setTitleDetail={setTitleDetail} disableAlertState={disableAlertState} />
 			)}
 		</Box>
     

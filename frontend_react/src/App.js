@@ -45,14 +45,14 @@ export default class App extends React.Component {
 			<ThemeProvider theme={theme}>
 				<Router>
 					<h1>Trello App</h1>
-					<Route
+					{/* <Route
 					path="/"
 					render={
 						(props) =>{
 							return this.state.loggedin ? (<Sidebar {...props} user={this.state.user} getUser={this.getUser} />) : (<></>);
 						}
 					}
-					/>
+					/> */}
 					<Route
 						exact
 						path="/"
@@ -92,7 +92,6 @@ export default class App extends React.Component {
 							return (
 								<ListProject
 									{...props}
-									uniqueId={props.match.params.id}
 									loginStatus={this.state.loggedin}
 									checkLoginStatus={this.checkLoginStatus}
 									user={this.state.user}
@@ -113,7 +112,7 @@ export default class App extends React.Component {
 						exact
 						path="/createCard/:id/:projectid"
 						render={(props) => {
-							return <CreateCard {...props} user={this.state.user} axiosInstance={axiosInstance} loginStatus={this.state.loggedin} getUser={this.getUser}/>;
+							return <CreateCard {...props} user={this.state.user} axiosInstance={axiosInstance} loginStatus={this.state.loggedin} getUser={this.getUser} edit={false}/>;
 						}}
 					/>
 					<Route
