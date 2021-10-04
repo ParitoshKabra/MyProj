@@ -65,6 +65,7 @@ export const CreateCard = (props) => {
 		else{
 			list_id = props.match.params.id;
 		}
+		console.log("list id: ",list_id);
 		const res = await axios
 			.get('http://127.0.0.1:8000/trelloAPIs/lists/' + list_id, { withCredentials: true })
 			.then((response) => {
@@ -186,7 +187,7 @@ export const CreateCard = (props) => {
 		}
 		if (!errorassign && !errorTitle) {
 			console.log(props)
-			const data = {
+			let data = {
 				cards_list: props.match.params.id,
 				created_by: props.user.id,
 				assigned_to: assigned_to,
@@ -215,7 +216,23 @@ export const CreateCard = (props) => {
 				});
 			}
 			else{
-				console.log("Updated Card sucessfully!!", data);
+				data.cards_list = props.card['cards_list'];
+				console.log("csrftoken", cookies.get("csrftoken"), data);
+				props.axiosInstance
+				.put('http://127.0.0.1:8000/trelloAPIs/cards/'+props.card.id+"/", data, {
+					headers: {
+					  'X-CSRFToken':  cookies.get("csrftoken"),
+					  'Content-Type': 'application/json',
+					  'X-Requested-With': 'XMLHttpRequest'
+					}
+				  })
+				.then((response) => {
+					console.log("Update Successful");
+					console.log(response.data);
+				})
+				.catch((error) => {
+					console.log(error);
+				});
 				props.handleClose();
 			}
 		}

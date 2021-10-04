@@ -50,6 +50,9 @@ export const MyList = (props) => {
 	useEffect(() => {
 		getList();
 	}, []);
+	useEffect(() =>{
+		getList();
+	}, [editCard])
 
 	const EditCard = (card) => {
 		setEditCard(true);
@@ -59,6 +62,7 @@ export const MyList = (props) => {
 	
 	const handleClose = () => {
 		setEditCard(false);
+		props.renderLists();
 	};
 	if (listContent) {
 		console.log(listContent['list_cards']);

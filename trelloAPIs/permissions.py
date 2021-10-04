@@ -73,6 +73,7 @@ class CardAssignPermissionorAccess(BasePermission):
         try:
             print("yahan ghusa huu")
             if self.check_staff_access(request) == False:
+                print(request.data.get('cards_list'))
                 list_ = Lists.objects.get(id = request.data.get('cards_list'))
                 creator = request.data.get('created_by')
                 print(creator, request.user.id)
@@ -81,10 +82,12 @@ class CardAssignPermissionorAccess(BasePermission):
                     print(self.message)
                     raise ValidationError(self.message, code=410)
                 project = list_.lists_project
+                print(project.id)
                 lt = [user.id for user in project.members.all()]
                 user_id = request.user.id
                 assigned_users = request.data.get("assigned_to")
                 print(assigned_users)
+                print(lt)
                 if user_id not in lt:
                     self.message = "You are not a member of project or an admin"
                     print(self.message)
