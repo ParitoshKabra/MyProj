@@ -42,6 +42,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'trelloAPIs', 
     'ckeditor',
+    'channels',
     'corsheaders'
 ]
 
@@ -134,7 +135,7 @@ CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:3000',
     'http://127.0.0.1:8000',
 )
-
+ASGI_APPLICATION = "MyProj.asgi.application"
 ALLOWED_HOSTS = [
     '127.0.0.1'
 ]

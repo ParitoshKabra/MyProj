@@ -125,11 +125,12 @@ class CardPermissions(BasePermission):
             print(f"{request.method}")
             print(request.user.is_active)
             return request.user.is_active
+            
         else:
             return CardAssignPermissionorAccess().has_permission(request=request, view=view)
 
     def has_object_permission(self, request, view, obj):
-        return super().has_object_permission(request, view, obj)
+        return request.user == obj.created_by or request.user.is_staff or request.user.is_superuser
 
 # how to give method specific permisssion in a viewset
 # pagination in djangorest, modified project only fetched

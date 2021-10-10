@@ -1,3 +1,6 @@
+from collections import UserList
+
+from django.db.models import fields
 from .models import *
 from rest_framework import serializers
 from django.utils.timezone import now
@@ -6,10 +9,23 @@ class UserCreatedByForeignkey(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
         return users.objects.filter(id=self.context['request'].user.id)
 
+class UserListSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    class Meta:
+        model = users
+        fields = ['username', 'id', 'is_staff', 'is_superuser', 'email']
 
+class UserWhoCommentedSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    def get_queryset(self):
+        return users.objects.filter(id=self.context['request'].user.id)
+    class Meta:
+        model = users
+        fields = ['username', 'id', 'is_staff', 'is_superuser', 'email']
+    
 class CommentSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    commented_by = UserCreatedByForeignkey()
+    commented_by = UserWhoCommentedSerializer()
     card_comments = serializers.PrimaryKeyRelatedField(queryset=Cards.objects.all())
     class Meta:
         model = Comments
@@ -47,18 +63,26 @@ class UserProjectSerializer(serializers.ModelSerializer):
         fields = ['title', 'descp', 'id', 'members', 'admins', 'created_by']
 
 # create a better serializer structure        
+class ProjectForListCardSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Projects
+        fields= ['id', 'title', 'members']
+
+class ListForCardSerializer(serializers.ModelSerializer):
+    lists_project = ProjectForListCardSerializer()
+    class Meta:
+        model = Lists
+        fields=['title', 'id', 'lists_project']
 
 class UserCardSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    cards_list = ListForCardSerializer()
     class Meta:
         model = Cards
-        fields = ['title', 'descp', 'id']
+        fields = ['title', 'descp', 'id','cards_list', 'due_date']
 
-class UserListSerializer(serializers.ModelSerializer):
-    id = serializers.IntegerField(read_only=True)
-    class Meta:
-        model = users
-        fields = ['username', 'id', 'is_staff', 'is_superuser', 'email']
+
+
 
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -75,6 +99,11 @@ class ProjectMemberSerializer(serializers.ModelSerializer):
         model = Projects
         fields = ['members']
 
+class ProjectAdminSerializer(serializers.ModelSerializer):
+    admins = UserListSerializer(many=True)
+    class Meta:
+        model = Projects
+        fields = ['admins']
 # same for members serializer
 # assigned_to MemberSerializer()
 # user vs users, use different serializers 
