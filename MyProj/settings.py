@@ -33,6 +33,7 @@ CKEDITOR_UPLOAD_PATH = "ckeditor_uploads/"
 # Application definition
 
 INSTALLED_APPS = [
+    'channels',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,7 +43,6 @@ INSTALLED_APPS = [
     'rest_framework',
     'trelloAPIs', 
     'ckeditor',
-    'channels',
     'corsheaders'
 ]
 

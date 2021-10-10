@@ -86,9 +86,14 @@ class ProjectMakeAdminViewSet(viewsets.GenericViewSet, mixins.UpdateModelMixin, 
         return Response(serializer.data)
 
  
-class CommentApiViewSet(viewsets.ModelViewSet):
+class CommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     queryset = Comments.objects.all()
     serializer_class = CommentSerializer
+    permission_classes = [IsAuthenticated,]
+
+class PostCommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.CreateModelMixin):
+    queryset = Comments.objects.all()
+    serializer_class = CommentPostSerializer
     permission_classes = [IsAuthenticated, CanCommentorViewComments]
 
 class ProjectApiViewSet(viewsets.ModelViewSet):

@@ -30,7 +30,13 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Comments
         fields = '__all__'
-
+class CommentPostSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    commented_by = UserCreatedByForeignkey()
+    card_comments = serializers.PrimaryKeyRelatedField(queryset=Cards.objects.all())
+    class Meta:
+        model = Comments
+        fields = '__all__'
 class CardSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     comments_in_card = CommentSerializer(many=True, read_only=True)
