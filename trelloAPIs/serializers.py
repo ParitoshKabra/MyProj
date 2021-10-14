@@ -7,13 +7,14 @@ from django.utils.timezone import now
 
 class UserCreatedByForeignkey(serializers.PrimaryKeyRelatedField):
     def get_queryset(self):
+        print(self.context)
         return users.objects.filter(id=self.context['request'].user.id)
 
 class UserListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
     class Meta:
         model = users
-        fields = ['username', 'id', 'is_staff', 'is_superuser', 'email']
+        fields = ['username', 'id', 'is_staff', 'is_superuser', 'email', 'is_active']
 
 class UserWhoCommentedSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
@@ -32,7 +33,7 @@ class CommentSerializer(serializers.ModelSerializer):
         fields = '__all__'
 class CommentPostSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
-    commented_by = UserCreatedByForeignkey()
+    commented_by = serializers.PrimaryKeyRelatedField(queryset=users.objects.all())
     card_comments = serializers.PrimaryKeyRelatedField(queryset=Cards.objects.all())
     class Meta:
         model = Comments
@@ -92,13 +93,14 @@ class UserCardSerializer(serializers.ModelSerializer):
 
 class UserSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    
     projects_of_user = UserProjectSerializer(many=True, read_only = True)
     comments_of_user = CommentSerializer(many=True, read_only=True)
     assigned_cards = UserCardSerializer(many=True, read_only=True)
     class Meta:
         model = users
-        fields = ['id', 'username', 'projects_of_user','comments_of_user', 'assigned_cards', 'is_staff', 'is_superuser', 'email']
-
+        fields = ['id', 'username', 'projects_of_user','comments_of_user', 'assigned_cards', 'is_staff', 'is_superuser', 'is_active', 'email']
+        read_only_fields = ['username']
 class ProjectMemberSerializer(serializers.ModelSerializer):
     members = UserListSerializer(read_only = True, many = True)
     class Meta:

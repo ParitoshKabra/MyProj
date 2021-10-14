@@ -22,8 +22,10 @@ class UserPermissions(BasePermission):
     def has_permission(self, request, view):
         if request.method == "GET":
             return request.user.is_active
-        else:
+        elif request.method == "POST":
             return request.user.is_superuser
+        else:
+            return request.user.is_staff or request.user.is_superuser
     def has_object_permission(self, request, view, obj):
         if request.method == "GET":
             return request.user.is_active

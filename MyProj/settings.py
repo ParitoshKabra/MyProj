@@ -136,6 +136,15 @@ CORS_ORIGIN_WHITELIST = (
     'http://127.0.0.1:8000',
 )
 ASGI_APPLICATION = "MyProj.asgi.application"
+
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels_redis.core.RedisChannelLayer",
+        "CONFIG": {
+            "hosts": [("localhost", 6379)],
+        },
+    },
+}
 ALLOWED_HOSTS = [
     '127.0.0.1'
 ]

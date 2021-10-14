@@ -26,14 +26,16 @@ class UserListApiViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.
         if self.action == 'retrieve':
             return UserSerializer
         return super(UserListApiViewSet, self).get_serializer_class()
-class UserApiViewSet(viewsets.GenericViewSet, mixins.ListModelMixin):
+class UserApiViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.UpdateModelMixin):
     
     serializer_class = UserSerializer
     permission_classes = [IsAuthenticated, UserPermissions]
 
     def get_queryset(self):
-        return users.objects.filter(id=self.request.user.id)
-
+        if self.action == 'list':
+            return users.objects.filter(id=self.request.user.id)
+        else:
+            return users.objects.all()
 class ProjectMemberApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = ProjectMemberSerializer
     queryset = Projects.objects.all()
@@ -175,7 +177,8 @@ def oauth_redirect(request):
         user_ = authenticate(request=request, user_json=user)
         msg = "login success"
         login(request, user_) 
-        res= Response({"sessionid": request.session._session_key, "csrftoken": get_token(request)}, status=status.HTTP_202_ACCEPTED)
+        res= Response({"success":"authentication successfull"}, status=status.HTTP_202_ACCEPTED)
+        # res= Response({"sessionid": request.session._session_key, "csrftoken": get_token(request)}, status=status.HTTP_202_ACCEPTED)
         return res
     else:
         msg = "Invalid login credentials"
@@ -190,6 +193,18 @@ def log_out(request):
     logout(request)
     return JsonResponse({"msg": "logged out successfully"})
 
+@api_view(("POST", ))
+def admin_login(request):
+    user = authenticate(username=request.data.get('username'), password=request.data.get('password'))
+    if user is not None:
+        login(request, user)
+        res = Response({"sessionid": request.session._session_key, "csrftoken": get_token(request)}, status=status.HTTP_202_ACCEPTED)
+        return res
+    else:
+        return Response({"error": "user not found"}, status=status.HTTP_202_ACCEPTED)
+@api_view(("GET",))
+def get_csrf_token(request):
+    return Response({"csrftoken":get_token(request)}, status=status.HTTP_202_ACCEPTED)
 @api_view(("GET", ))
 def check_login(request):
     msg = {

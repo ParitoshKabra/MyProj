@@ -1,7 +1,8 @@
-from django.urls import re_path
+from django.urls import re_path, path
 from . import consumers
 websocket_urlpatterns = [
-    re_path(r'ws/trelloAPIs/comments/(?P<pk>[0-9]+)/$', consumers.GetComment),
-    re_path(r'ws/trelloAPIs/post_comments/(?P<pk>[0-9]+)/$', consumers.ModifyComment),
-    re_path(r'ws/trelloAPIs/post_comments/$', consumers.PostComment),
+    path('ws/test/', consumers.TestConsumer.as_asgi(), name='test_ws'),
+    # re_path(r'trelloAPIs/comments/(?P<pk>[0-9]+)/$', consumers.GetComment),
+    # re_path(r'trelloAPIs/post_comments/(?P<pk>[0-9]+)/$', consumers.ModifyComment),
+    # re_path(r'trelloAPIs/post_comments/$', consumers.PostComment),
 ]
