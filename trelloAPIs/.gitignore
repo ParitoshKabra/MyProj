@@ -2,3 +2,4 @@ __pycache__/*
 __init__.py
 oauth.py
 ../frontend_react/*
+../email_conffig.py

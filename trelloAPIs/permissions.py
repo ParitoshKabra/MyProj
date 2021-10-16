@@ -58,11 +58,8 @@ class CanCommentorViewComments(BasePermission):
             return self.check_staff_access(request)
         else:
             if request.user == obj.commented_by:
-                print(request.method)
-                # print("thsi was checked") #why!
                 return True
-            return self.check_staff_access(request)
-
+            return False
 
 
 class CardAssignPermissionorAccess(BasePermission):

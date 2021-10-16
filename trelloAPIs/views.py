@@ -17,6 +17,10 @@ from rest_framework.views import APIView, Response
 from rest_framework import mixins, viewsets
 from rest_framework import status
 from .permissions import CanCommentorViewComments, CardAssignPermissionorAccess, CardPermissions, ListPermissions, ProjectPermission, UserPermissions
+from channels.layers import get_channel_layer
+channel_layer = get_channel_layer()
+from asgiref.sync import async_to_sync
+
 auth_url_omniport = "https://channeli.in/oauth/authorise?client_id=9iXxR2JLU4HyfCi1umE5nDKTyjbpicWrFFUQPWAV"
 
 class UserListApiViewSet(viewsets.GenericViewSet, mixins.ListModelMixin, mixins.RetrieveModelMixin):
@@ -52,6 +56,10 @@ class CardApiViewSet(viewsets.ModelViewSet):
     serializer_class = CardSerializer
     permission_classes = [IsAuthenticated, CardPermissions]
 
+    def get_serializer_class(self):
+        if self.action in ["retrieve", "list"]:
+            return CardForCommentSerializer
+        return super().get_serializer_class()
     #on a post request put a check on users assigned and assign the creator to member of the project
     def get_permissions(self):
         if self.request.method == "POST":
@@ -93,11 +101,58 @@ class CommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin):
     serializer_class = CommentSerializer
     permission_classes = [IsAuthenticated,]
 
-class PostCommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.CreateModelMixin):
+class PostCommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, mixins.UpdateModelMixin, mixins.CreateModelMixin, mixins.DestroyModelMixin):
     queryset = Comments.objects.all()
     serializer_class = CommentPostSerializer
     permission_classes = [IsAuthenticated, CanCommentorViewComments]
 
+    def destroy(self, request, *args, **kwargs):
+        instance = self.get_object()
+        ser = CommentSerializer(instance=instance)
+        print(ser, ser.data)
+        if instance.commented_by == request.user:
+            self.perform_destroy(instance)
+        else:
+            return Response({"error": "comment can be modified only by its owner"}, status=status.HTTP_401_UNAUTHORIZED)
+        async_to_sync(channel_layer.group_send)("comment_group", {"type": "delete_comment", "message":ser.data})
+        return Response(status=status.HTTP_204_NO_CONTENT)
+    # def update(self, request, *args, **kwargs):
+    #     partial = kwargs.pop('partial', False)
+    #     instance = self.get_object()
+    #     print(request.data)
+    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
+    #     serializer.is_valid(raise_exception=True)
+    #     if instance.commented_by == request.user:
+    #         self.perform_update(instance)
+    #     else:
+    #         return Response({"error": "comment can be modified only by its owner"}, status=status.HTTP_401_UNAUTHORIZED)
+    #     ser = CommentSerializer(instance=instance)
+    #     print(ser, ser.data)
+    #     if getattr(instance, '_prefetched_objects_cache', None):
+    #         # If 'prefetch_related' has been applied to a queryset, we need to
+    #         # forcibly invalidate the prefetch cache on the instance.
+    #         instance._prefetched_objects_cache = {}
+    #     async_to_sync(channel_layer.group_send)("comment_group", {"type": "modified_comment", "message":ser.data})
+        
+    #     return Response(serializer.data)
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        if(instance.commented_by==request.user):
+            self.perform_update(serializer)
+        else:
+            return Response({"error":"comment can be modified only by its creator"}, status=status.status.HTTP_400_BAD_REQUEST)
+        ser = CommentSerializer(instance=instance)
+        print(ser, ser.data)
+        if getattr(instance, '_prefetched_objects_cache', None):
+            # If 'prefetch_related' has been applied to a queryset, we need to
+            # forcibly invalidate the prefetch cache on the instance.
+            instance._prefetched_objects_cache = {}
+
+        async_to_sync(channel_layer.group_send)("comment_group", {"type": "modified_comment", "message":ser.data})
+        return Response(serializer.data)
 class ProjectApiViewSet(viewsets.ModelViewSet):
     queryset = Projects.objects.all()
     serializer_class = ProjectSerializer

@@ -45,6 +45,14 @@ class CardSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cards
         fields = '__all__'
+class CardForCommentSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
+    comments_in_card = CommentSerializer(many=True, read_only=True)
+    created_by = UserCreatedByForeignkey()
+    assigned_to = UserListSerializer(many=True)
+    class Meta:
+        model = Cards
+        fields = '__all__'
 
 class ListSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
