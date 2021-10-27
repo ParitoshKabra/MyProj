@@ -116,25 +116,7 @@ class PostCommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, 
             return Response({"error": "comment can be modified only by its owner"}, status=status.HTTP_401_UNAUTHORIZED)
         async_to_sync(channel_layer.group_send)("comment_group", {"type": "delete_comment", "message":ser.data})
         return Response(status=status.HTTP_204_NO_CONTENT)
-    # def update(self, request, *args, **kwargs):
-    #     partial = kwargs.pop('partial', False)
-    #     instance = self.get_object()
-    #     print(request.data)
-    #     serializer = self.get_serializer(instance, data=request.data, partial=partial)
-    #     serializer.is_valid(raise_exception=True)
-    #     if instance.commented_by == request.user:
-    #         self.perform_update(instance)
-    #     else:
-    #         return Response({"error": "comment can be modified only by its owner"}, status=status.HTTP_401_UNAUTHORIZED)
-    #     ser = CommentSerializer(instance=instance)
-    #     print(ser, ser.data)
-    #     if getattr(instance, '_prefetched_objects_cache', None):
-    #         # If 'prefetch_related' has been applied to a queryset, we need to
-    #         # forcibly invalidate the prefetch cache on the instance.
-    #         instance._prefetched_objects_cache = {}
-    #     async_to_sync(channel_layer.group_send)("comment_group", {"type": "modified_comment", "message":ser.data})
-        
-    #     return Response(serializer.data)
+    
     def update(self, request, *args, **kwargs):
         partial = kwargs.pop('partial', False)
         instance = self.get_object()
@@ -153,6 +135,7 @@ class PostCommentApiViewSet(viewsets.GenericViewSet, mixins.RetrieveModelMixin, 
 
         async_to_sync(channel_layer.group_send)("comment_group", {"type": "modified_comment", "message":ser.data})
         return Response(serializer.data)
+        
 class ProjectApiViewSet(viewsets.ModelViewSet):
     queryset = Projects.objects.all()
     serializer_class = ProjectSerializer
@@ -251,6 +234,7 @@ def log_out(request):
 @api_view(("POST", ))
 def admin_login(request):
     user = authenticate(username=request.data.get('username'), password=request.data.get('password'))
+    print(user)
     if user is not None:
         login(request, user)
         res = Response({"sessionid": request.session._session_key, "csrftoken": get_token(request)}, status=status.HTTP_202_ACCEPTED)

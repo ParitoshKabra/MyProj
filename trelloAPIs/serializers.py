@@ -73,6 +73,8 @@ class ProjectSerializer(serializers.ModelSerializer):
 
 class UserProjectSerializer(serializers.ModelSerializer):
     id = serializers.IntegerField(read_only=True)
+    members = UserListSerializer(read_only = True, many= True)
+    admins = UserListSerializer(read_only=True, many=True)
     class Meta:
         model = Projects
         fields = ['title', 'descp', 'id', 'members', 'admins', 'created_by']
@@ -120,6 +122,8 @@ class ProjectAdminSerializer(serializers.ModelSerializer):
     class Meta:
         model = Projects
         fields = ['admins']
+
+
 # same for members serializer
 # assigned_to MemberSerializer()
 # user vs users, use different serializers 
