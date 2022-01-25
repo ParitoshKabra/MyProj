@@ -96,7 +96,7 @@ class UserCardSerializer(serializers.ModelSerializer):
     cards_list = ListForCardSerializer()
     class Meta:
         model = Cards
-        fields = ['title', 'descp', 'id','cards_list', 'due_date']
+        fields = ['title', 'descp', 'id','cards_list', 'due_date', 'completed']
 
 
 

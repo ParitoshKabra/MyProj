@@ -35,7 +35,8 @@ class Cards(models.Model):
     created_by  = models.ForeignKey(users, on_delete=models.CASCADE, related_name="created_cards")
     assigned_to = models.ManyToManyField(users, related_name="assigned_cards") # cannot be assigned to someone not a memeber of the project
     cards_list = models.ForeignKey(Lists, on_delete=models.CASCADE, related_name="list_cards")
-
+    completed = models.BooleanField(default=False)
+    completed_time = models.DateTimeField(null=True)
     def __str__(self):
         return f"{self.title}"
     
